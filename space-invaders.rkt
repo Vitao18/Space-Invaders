@@ -1,0 +1,218 @@
+(require 2htdp/universe)
+(require 2htdp/image)
+
+;; Space Invaders
+
+
+;; Constants:
+
+(define WIDTH  300)
+(define HEIGHT 500)
+
+(define INVADER-X-SPEED 1.5)  ;speeds (not velocities) in pixels per tick
+(define INVADER-Y-SPEED 1.5)
+(define TANK-SPEED 2)
+(define MISSILE-SPEED 10)
+
+(define HIT-RANGE 10)
+
+(define INVADE-RATE 100)
+
+(define BACKGROUND (empty-scene WIDTH HEIGHT))
+
+(define INVADER
+  (overlay/xy (ellipse 10 15 "outline" "blue")              ;cockpit cover
+              -5 6
+              (ellipse 20 10 "solid"   "blue")))            ;saucer
+
+(define TANK
+  (overlay/xy (overlay (ellipse 28 8 "solid" "black")       ;tread center
+                       (ellipse 30 10 "solid" "green"))     ;tread outline
+              5 -14
+              (above (rectangle 5 10 "solid" "black")       ;gun
+                     (rectangle 20 10 "solid" "black"))))   ;main body
+
+(define TANK-HEIGHT/2 (/ (image-height TANK) 2))
+
+(define MISSILE (ellipse 5 15 "solid" "red"))
+
+
+
+;; Data Definitions:
+
+(define-struct game (invaders missiles tank))
+;; Game is (make-game  (listof Invader) (listof Missile) Tank)
+;; interp. the current state of a space invaders game
+;;         with the current invaders, missiles and tank position
+
+;; Game constants defined below Missile data definition
+
+#;
+(define (fn-for-game s)
+  (... (fn-for-loinvader (game-invaders s))
+       (fn-for-lom (game-missiles s))
+       (fn-for-tank (game-tank s))))
+
+
+
+(define-struct tank (x dir))
+;; Tank is (make-tank Number Integer[-1, 1])
+;; interp. the tank location is x, HEIGHT - TANK-HEIGHT/2 in screen coordinates
+;;         the tank moves TANK-SPEED pixels per clock tick left if dir -1, right if dir 1
+
+(define T0 (make-tank (/ WIDTH 2) 1))   ;center going right
+(define T1 (make-tank 50 1))            ;going right
+(define T2 (make-tank 50 -1))           ;going left
+
+#;
+(define (fn-for-tank t)
+  (... (tank-x t) (tank-dir t)))
+
+
+
+(define-struct invader (x y dx))
+;; Invader is (make-invader Number Number Number)
+;; interp. the invader is at (x, y) in screen coordinates
+;;         the invader along x by dx pixels per clock tick
+
+(define I1 (make-invader 150 100 12))           ;not landed, moving right
+(define I2 (make-invader 150 HEIGHT -10))       ;exactly landed, moving left
+(define I3 (make-invader 150 (+ HEIGHT 10) 10)) ;> landed, moving right
+(define I4 (make-invader (- WIDTH 10) (/ HEIGHT 2) 10)) ;; hitted right side
+(define I5 (make-invader 10 (/ HEIGHT 2) -10))    ;; hitted left side
+
+
+#;
+(define (fn-for-invader invader)
+  (... (invader-x invader) (invader-y invader) (invader-dx invader)))
+
+
+(define-struct missile (x y))
+;; Missile is (make-missile Number Number)
+;; interp. the missile's location is x y in screen coordinates
+
+(define M1 (make-missile 150 300))                       ;not hit U1
+(define M2 (make-missile (invader-x I1) (+ (invader-y I1) 10)))  ;exactly hit U1
+(define M3 (make-missile (invader-x I1) (+ (invader-y I1)  5)))  ;> hit U1
+
+#;
+(define (fn-for-missile m)
+  (... (missile-x m) (missile-y m)))
+
+
+
+(define G0 (make-game empty empty T0))
+(define G1 (make-game empty empty T1))
+(define G2 (make-game (list I1) (list M1) T1))
+(define G3 (make-game (list I1 I2) (list M1 M2) T1))
+
+
+;; =================
+;; Functions:
+
+;; WS -> WS
+;; start the world with ...
+;; 
+(define (main g)
+  (big-bang g                    ; Game
+            (on-tick   tock)     ; Game -> Game
+            (to-draw   ...)      ; Game -> Image
+            (stop-when ...)      ; Game -> Boolean
+            (on-mouse  ...)      ; Game Integer Integer MouseEvent -> Game
+            (on-key    ...)))    ; Game KeyEvent -> Game
+
+
+;; Game -> Game
+;; produces the next state of the game
+
+; (define (tock g) g) ;Stub
+
+(check-expect (tock G0) (make-game empty empty T0))
+(check-expect (tock G1) (make-game empty empty T1))
+(check-expect (tock G2) (make-game
+                         (list(make-invader 162 101.5 12))
+                         (list(make-missile (+ 150 MISSILE-SPEED) (+ 300 MISSILE-SPEED)))
+                         T1))
+
+(define (tock g)
+  (make-game
+   (move-loi (game-invaders g))
+   (move-lom (game-missiles g))
+   (game-tank g)))
+
+
+
+;; ListOfInvaders -> ListOfInvaders
+;; made the list of invaders move by SPEED etc
+
+; (define (move-loi loi) loi) ;Stub
+
+(check-expect (move-loi (list I1 I2 I3))
+              (list
+                   (make-invader 162 (+ 100 INVADER-Y-SPEED)    12)
+                   (make-invader 140 (+ HEIGHT INVADER-Y-SPEED) -10)
+                   (make-invader 160 (+ (+ HEIGHT 10) INVADER-Y-SPEED) 10)))
+(check-expect (move-loi (list I4 I5))
+              (list
+               (make-invader WIDTH (+ (/ HEIGHT 2) INVADER-Y-SPEED) -10)
+               (make-invader 0 (+ (/ HEIGHT 2) INVADER-Y-SPEED) 10))) 
+
+(define (move-loi loi)
+  (cond [(empty? loi) empty]            
+        [else (cons (move-invader (first loi))                
+                   (move-loi (rest loi)))]))
+
+;; MOVE-INVADER
+
+;; Invader -> Invader
+;; A function that moves a single invader
+
+; (define (move-invader invader) invader) ;Stub
+
+(define (move-invader invader)
+  (make-invader (+ (invader-x invader) (invader-dx invader))
+                (+ (invader-y invader) INVADER-Y-SPEED) 
+                (out-of-bonds? (invader-x invader) (invader-dx invader))))
+
+;; OUT-OF-BONDS?
+
+;; Number Number -> Number
+;; A function that given a x and dx, returns the value multiply by -1 if it is reaching out of bounds
+
+; (define (out-of-bonds? x dx) dx) ;Stub
+
+(define (out-of-bonds? x dx)
+  (cond [(>= (+ x dx) WIDTH) (* -1 dx)]
+        [(>= 0 (+ x dx))      (* -1 dx)]
+        [else dx]))
+
+
+;; MOVE LIST OF MISSILES
+;; ListOfMissiles -> ListOfMissiles
+;; made the list of missiles move by SPEED etc
+
+; (define (move-lom lom) lom) ;Stub
+
+(check-expect (move-lom empty) empty)
+(check-expect (move-lom (list M1 M2 M3))
+              (list (make-missile (+ 150 MISSILE-SPEED) (+ 300 MISSILE-SPEED))
+                    (make-missile (+ (invader-x I1) MISSILE-SPEED) (+ (+ (invader-y I1) 10) MISSILE-SPEED))
+                    (make-missile (+ (invader-x I1) MISSILE-SPEED) (+ (+ (invader-y I1)  5) MISSILE-SPEED))))
+
+
+(define (move-lom lom)
+  (cond [(empty? lom) empty]            
+        [else (cons (move-missile (first lom))                
+                   (move-lom (rest lom)))]))
+
+;; MOVE SINGLE MISSILE
+;; Missile -> Missile
+;; makes the missile move x and y coordinates by MISSILE-SPEED
+
+
+; (define (move-missile missile) missile) ;Stub
+
+(check-expect (move-missile M1) (make-missile (+ 150 MISSILE-SPEED) (+ 300 MISSILE-SPEED)))
+
+(define (move-missile missile)
+  (make-missile (+ (missile-x missile) MISSILE-SPEED) (+ (missile-y missile) MISSILE-SPEED))) 
