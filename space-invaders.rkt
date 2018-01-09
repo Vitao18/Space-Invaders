@@ -1,3 +1,6 @@
+;; The first three lines of this file were inserted by DrRacket. They record metadata
+;; about the language level of this file in a form that our tools can easily process.
+#reader(lib "htdp-beginner-abbr-reader.ss" "lang")((modname space-invaders-starter) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #f #t none #f () #f)))
 (require 2htdp/universe)
 (require 2htdp/image)
 
@@ -105,6 +108,7 @@
 (define G1 (make-game empty empty T1))
 (define G2 (make-game (list I1) (list M1) T1))
 (define G3 (make-game (list I1 I2) (list M1 M2) T1))
+(define G4 (make-game (list I1 I2 I3) (list M1 M2 M3) T1))
 
 
 ;; =================
@@ -117,7 +121,7 @@
   (big-bang g                    ; Game
             (on-tick   tock)     ; Game -> Game
             (to-draw   ...)      ; Game -> Image
-            (stop-when ...)      ; Game -> Boolean
+            (stop-when lose)      ; Game -> Boolean
             (on-mouse  ...)      ; Game Integer Integer MouseEvent -> Game
             (on-key    ...)))    ; Game KeyEvent -> Game
 
@@ -215,4 +219,24 @@
 (check-expect (move-missile M1) (make-missile (+ 150 MISSILE-SPEED) (+ 300 MISSILE-SPEED)))
 
 (define (move-missile missile)
-  (make-missile (+ (missile-x missile) MISSILE-SPEED) (+ (missile-y missile) MISSILE-SPEED))) 
+  (make-missile (+ (missile-x missile) MISSILE-SPEED) (+ (missile-y missile) MISSILE-SPEED)))
+
+;; STOPS THE GAME WHEN YOU LOSE
+;; Game -> Boolean
+;; returns true if you lose the fucking game, loser
+
+; (define (lose g) false) ;Stub
+
+(check-expect (lose G0) false) ;empty game
+(check-expect (lose G1) false) ;only a tank, no way to lose
+(check-expect (lose G2) false) ;alien has not landed yet!!!
+(check-expect (lose G3)  true) ;the alien has landed!
+(check-expect (lose G4)  true) ;has already conquered all the land!
+
+(define (lose s) (landed? (game-invaders s)))
+
+;; HAS ANY ALIEN IN HERE?
+;; ListOfInvaders -> Boolean
+;; returns true if any of the invaders in the list have landed
+
+(define (landed? loi) false) ; Stub
