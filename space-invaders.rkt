@@ -1,6 +1,6 @@
 ;; The first three lines of this file were inserted by DrRacket. They record metadata
 ;; about the language level of this file in a form that our tools can easily process.
-#reader(lib "htdp-beginner-abbr-reader.ss" "lang")((modname space-invaders-starter) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #f #t none #f () #f)))
+#reader(lib "htdp-beginner-abbr-reader.ss" "lang")((modname space-invaders) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #f #t none #f () #f)))
 (require 2htdp/universe)
 (require 2htdp/image)
 
@@ -121,9 +121,9 @@
   (big-bang g                    ; Game
             (on-tick   tock)     ; Game -> Game
             (to-draw   ...)      ; Game -> Image
-            (stop-when lose)      ; Game -> Boolean
+            (stop-when lose)     ; Game -> Boolean
             (on-mouse  ...)      ; Game Integer Integer MouseEvent -> Game
-            (on-key    ...)))    ; Game KeyEvent -> Game
+            (on-key    move)))   ; Game KeyEvent -> Game
 
 
 ;; Game -> Game
@@ -163,7 +163,7 @@
 
 (define (move-loi loi)
   (cond [(empty? loi) empty]            
-        [else (cons (move-invader (first loi))                
+        [else (cons (move-invader (first loi))
                    (move-loi (rest loi)))]))
 
 ;; MOVE-INVADER
@@ -233,10 +233,42 @@
 (check-expect (lose G3)  true) ;the alien has landed!
 (check-expect (lose G4)  true) ;has already conquered all the land!
 
-(define (lose s) (landed? (game-invaders s)))
+(define (lose s) (any-landed? (game-invaders s)))
 
 ;; HAS ANY ALIEN IN HERE?
 ;; ListOfInvaders -> Boolean
 ;; returns true if any of the invaders in the list have landed
 
-(define (landed? loi) false) ; Stub
+; (define (any-landed? loi) false) ; Stub
+
+(check-expect (any-landed? (list I1))    false) ; A list with a alien that has not landed
+(check-expect (any-landed? (list I1 I2))  true) ; A list where the second alien has landed :)
+(check-expect (any-landed? (list I4 I5)) false) ; Neither aliens have landed
+
+(define (any-landed? loi)
+  (cond [(empty? loi) false]
+        [else
+         (or (landed? (first loi))
+             (any-landed? (rest loi)))]))
+
+;; DID YOU ARRIVED AT YOUR DESTINATION?
+;; Invader -> Boolean
+;; returns true if the Y coordinate is >= HEIGHT
+
+; (define (landed? i) true) ; Stub
+
+(check-expect (landed? I1) false)  ; MORE TESTS MAH FRIEND
+(check-expect (landed? I2)  true)  ; I REALLY LOVE TDD
+(check-expect (landed? I4) false)
+
+(define (landed? i)
+  (>= (invader-y i) HEIGHT))
+
+;; LET'S MOVE THINGS A LITTLE
+;; Game KeyEvent -> Game
+;; moves the tank and shot missiles, gurrrlll!
+
+(define (handle-key ws ke)
+  (cond [(key=? ke ) (... ws)]
+        [else 
+         (... ws)]))
