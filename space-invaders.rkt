@@ -1,6 +1,7 @@
 ;; The first three lines of this file were inserted by DrRacket. They record metadata
 ;; about the language level of this file in a form that our tools can easily process.
 #reader(lib "htdp-beginner-abbr-reader.ss" "lang")((modname space-invaders) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #f #t none #f () #f)))
+
 (require 2htdp/universe)
 (require 2htdp/image)
 
@@ -109,6 +110,7 @@
 (define G2 (make-game (list I1) (list M1) T1))
 (define G3 (make-game (list I1 I2) (list M1 M2) T1))
 (define G4 (make-game (list I1 I2 I3) (list M1 M2 M3) T1))
+(define G5 (make-game empty empty T2))
 
 
 ;; =================
@@ -131,12 +133,13 @@
 
 ; (define (tock g) g) ;Stub
 
-(check-expect (tock G0) (make-game empty empty T0))
-(check-expect (tock G1) (make-game empty empty T1))
+(check-expect (tock G0) (make-game empty empty (make-tank (/ WIDTH 2) (+ 1 TANK-SPEED))))
+(check-expect (tock G1) (make-game empty empty (make-tank 50 (+ 1 TANK-SPEED))))
 (check-expect (tock G2) (make-game
                          (list(make-invader 162 101.5 12))
                          (list(make-missile (+ 150 MISSILE-SPEED) (+ 300 MISSILE-SPEED)))
-                         T1))
+                         (make-tank 50 (+ 1 TANK-SPEED))))
+(check-expect (tock G5) (make-game empty empty (make-tank 50 (+ -1 TANK-SPEED))))
 
 (define (tock g)
   (make-game
@@ -264,11 +267,10 @@
 (define (landed? i)
   (>= (invader-y i) HEIGHT))
 
-;; LET'S MOVE THINGS A LITTLE
+;; EXPLODING things
 ;; Game KeyEvent -> Game
-;; moves the tank and shot missiles, gurrrlll!
+;; JUST shot missiles, gurrrlll!
 
-(define (handle-key ws ke)
-  (cond [(key=? ke ) (... ws)]
-        [else 
-         (... ws)]))
+(define (move g ke) g) 
+
+              
