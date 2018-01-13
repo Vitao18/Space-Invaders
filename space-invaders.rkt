@@ -272,10 +272,10 @@
 ;; Game KeyEvent -> Game
 ;; moves the tank and shot missiles, gurrrlll!
 
-(define (handle-key g ke) g) ; Stub
+; (define (handle-key g ke) g) ; Stub
 
 (check-expect (handle-key G0 "left")
-              (make-game empty empty (make-tank (- (/ WIDTH 2) TANK-SPEED) -1))) 
+              (make-game empty empty (make-tank (/ WIDTH 2) -1))) 
 (check-expect (handle-key G0 "right")
               (make-game empty empty (make-tank (+ (/ WIDTH 2) TANK-SPEED)  1)))
 (check-expect (handle-key G0 " ")
@@ -289,10 +289,39 @@
 (check-expect (handle-key G-RIGHT "right")
               (make-game empty empty (make-tank WIDTH 1)))
             
-
-#;
 (define (handle-key g ke)
-  (cond [(key=? ke  "left") (move-tank g)]
-        [(key=? ke "right") (move-tank g)]
-        [(key=? ke " ")     (shot g)]
+  (cond [(key=? ke  "left") (move-tank g "left" )]
+        [(key=? ke "right") (move-tank g "right")]
+        [(key=? ke " ")     (shoot g)]
         [else g]))
+
+
+;; MOOOOOVE TANK!!
+;; Game String -> Game
+;; return the new game with the tank moved to the direction, or with a direction change
+
+(define (move-tank g dir) g) ;Stub
+
+(check-expect (move-tank G0 "left")
+              (make-game empty
+                         (list (make-missile (tank-x (game-tank G0)) TANK-HEIGHT/2)) T0))
+(check-expect (move-tank G0 "right")
+              (make-game empty empty (make-tank (+ (/ WIDTH 2) TANK-SPEED)  1)))
+(check-expect (move-tank G-LEFT "left")
+              (make-game empty empty (make-tank 0 -1)))
+(check-expect (move-tank G-RIGHT "right")
+              (make-game empty empty (make-tank WIDTH 1)))
+
+;; SHOOT MISSILES
+;; Game -> Game
+;; return the game with the missile appended to the list of missiles
+
+; (define (shoot g) g) ;Stub
+
+(check-expect (shoot G0)
+              (make-game empty
+                         (list (make-missile (tank-x (game-tank G0)) TANK-HEIGHT/2)) T0))
+(check-expect (shoot G2)
+              (make-game I1
+                         (list M1 (make-missile (tank-x (game-tank G0)) TANK-HEIGHT/2)) T1))
+
