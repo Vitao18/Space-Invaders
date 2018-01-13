@@ -66,6 +66,8 @@
 (define T0 (make-tank (/ WIDTH 2) 1))   ;center going right
 (define T1 (make-tank 50 1))            ;going right
 (define T2 (make-tank 50 -1))           ;going left
+(define T-LEFT  (make-tank 0  -1))      ;tank at left extreme, trying to go to left
+(define T-RIGHT (make-tank WIDTH 1))    ;tank at the right extreme, trying to go to right
 
 #;
 (define (fn-for-tank t)
@@ -109,6 +111,8 @@
 (define G2 (make-game (list I1) (list M1) T1))
 (define G3 (make-game (list I1 I2) (list M1 M2) T1))
 (define G4 (make-game (list I1 I2 I3) (list M1 M2 M3) T1))
+(define G-LEFT  (make-game empty empty T-LEFT))
+(define G-RIGHT (make-game empty empty T-RIGHT))
 
 
 ;; =================
@@ -123,7 +127,7 @@
             (to-draw   ...)      ; Game -> Image
             (stop-when lose)     ; Game -> Boolean
             (on-mouse  ...)      ; Game Integer Integer MouseEvent -> Game
-            (on-key    move)))   ; Game KeyEvent -> Game
+            (on-key    handle-key)))   ; Game KeyEvent -> Game
 
 
 ;; Game -> Game
@@ -268,7 +272,27 @@
 ;; Game KeyEvent -> Game
 ;; moves the tank and shot missiles, gurrrlll!
 
-(define (handle-key ws ke)
-  (cond [(key=? ke ) (... ws)]
-        [else 
-         (... ws)]))
+(define (handle-key g ke) g) ; Stub
+
+(check-expect (handle-key G0 "left")
+              (make-game empty empty (make-tank (- (/ WIDTH 2) TANK-SPEED) -1))) 
+(check-expect (handle-key G0 "right")
+              (make-game empty empty (make-tank (+ (/ WIDTH 2) TANK-SPEED)  1)))
+(check-expect (handle-key G0 " ")
+              (make-game empty
+                         (list (make-missile (tank-x (game-tank G0)) TANK-HEIGHT/2)) T0))
+(check-expect (handle-key G2 " ")
+              (make-game I1
+                         (list M1 (make-missile (tank-x (game-tank G0)) TANK-HEIGHT/2)) T1))
+(check-expect (handle-key G-LEFT "left")
+              (make-game empty empty (make-tank 0 -1)))
+(check-expect (handle-key G-RIGHT "right")
+              (make-game empty empty (make-tank WIDTH 1)))
+            
+
+#;
+(define (handle-key g ke)
+  (cond [(key=? ke  "left") (move-tank g)]
+        [(key=? ke "right") (move-tank g)]
+        [(key=? ke " ")     (shot g)]
+        [else g]))
