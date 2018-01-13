@@ -275,15 +275,15 @@
 ; (define (handle-key g ke) g) ; Stub
 
 (check-expect (handle-key G0 "left")
-              (make-game empty empty (make-tank (/ WIDTH 2) -1))) 
+              (make-game empty empty (make-tank (- (/ WIDTH 2) TANK-SPEED) -1))) 
 (check-expect (handle-key G0 "right")
               (make-game empty empty (make-tank (+ (/ WIDTH 2) TANK-SPEED)  1)))
 (check-expect (handle-key G0 " ")
               (make-game empty
                          (list (make-missile (tank-x (game-tank G0)) TANK-HEIGHT/2)) T0))
 (check-expect (handle-key G2 " ")
-              (make-game I1
-                         (list M1 (make-missile (tank-x (game-tank G0)) TANK-HEIGHT/2)) T1))
+              (make-game (list I1)
+                         (list M1 (make-missile (tank-x (game-tank G2)) TANK-HEIGHT/2)) T1))
 (check-expect (handle-key G-LEFT "left")
               (make-game empty empty (make-tank 0 -1)))
 (check-expect (handle-key G-RIGHT "right")
@@ -300,11 +300,12 @@
 ;; Game String -> Game
 ;; return the new game with the tank moved to the direction, or with a direction change
 
-(define (move-tank g dir) g) ;Stub
+; (define (move-tank g dir) g) ;Stub
 
 (check-expect (move-tank G0 "left")
               (make-game empty
-                         (list (make-missile (tank-x (game-tank G0)) TANK-HEIGHT/2)) T0))
+                         empty
+                         (make-tank (- (/ WIDTH 2) TANK-SPEED) -1)))
 (check-expect (move-tank G0 "right")
               (make-game empty empty (make-tank (+ (/ WIDTH 2) TANK-SPEED)  1)))
 (check-expect (move-tank G-LEFT "left")
@@ -312,6 +313,26 @@
 (check-expect (move-tank G-RIGHT "right")
               (make-game empty empty (make-tank WIDTH 1)))
 
+(define (move-tank g dir)
+  (make-game
+   (game-invaders g)
+   (game-missiles g)
+   (cond
+     [(string=? dir "left")
+      (cond
+        [(< (- (tank-x (game-tank g)) TANK-SPEED) 0) (make-tank 0 -1)]
+        [else
+         (make-tank
+        (- (tank-x (game-tank g)) TANK-SPEED) -1)])]
+     [(string=? dir "right")
+      (cond
+        [(> (+ (tank-x (game-tank g)) TANK-SPEED) WIDTH) (make-tank WIDTH 1)]
+        [else
+         (make-tank
+        (+ (tank-x (game-tank g)) TANK-SPEED) 1)])]
+     [else (game-tank g)])))
+
+;; MOves
 
 
 ;; SHOOT MISSILES
@@ -324,8 +345,8 @@
               (make-game empty
                          (list (make-missile (tank-x (game-tank G0)) TANK-HEIGHT/2)) T0))
 (check-expect (shoot G2)
-              (make-game I1
-                         (list M1 (make-missile (tank-x (game-tank G0)) TANK-HEIGHT/2)) T1))
+              (make-game (list I1)
+                         (list M1 (make-missile (tank-x (game-tank G2)) TANK-HEIGHT/2)) T1))
 
 (define (shoot g)
   (make-game
