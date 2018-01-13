@@ -312,6 +312,8 @@
 (check-expect (move-tank G-RIGHT "right")
               (make-game empty empty (make-tank WIDTH 1)))
 
+
+
 ;; SHOOT MISSILES
 ;; Game -> Game
 ;; return the game with the missile appended to the list of missiles
@@ -325,3 +327,9 @@
               (make-game I1
                          (list M1 (make-missile (tank-x (game-tank G0)) TANK-HEIGHT/2)) T1))
 
+(define (shoot g)
+  (make-game
+   (game-invaders g)
+   (append (game-missiles g)
+           (list (make-missile (tank-x (game-tank g)) TANK-HEIGHT/2)))
+   (game-tank g)))
