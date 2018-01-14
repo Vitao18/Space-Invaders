@@ -3,7 +3,6 @@
 #reader(lib "htdp-beginner-abbr-reader.ss" "lang")((modname space-invaders) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #f #t none #f () #f)))
 (require 2htdp/universe)
 (require 2htdp/image)
-(random-seed 2)
 
 ;; Space Invaders
 
@@ -33,10 +32,11 @@
   (overlay/xy (overlay (ellipse 28 8 "solid" "black")       ;tread center
                        (ellipse 30 10 "solid" "green"))     ;tread outline
               5 -14
-              (above (rectangle 5 10 "solid" "black")       ;gun
+              (above (rectangle 5 10 "solid" "black")       ;gun 
                      (rectangle 20 10 "solid" "black"))))   ;main body
 
 (define TANK-HEIGHT/2 (/ (image-height TANK) 2))
+(define TANK-Y (- HEIGHT TANK-HEIGHT/2))
 
 (define MISSILE (ellipse 5 15 "solid" "red"))
 
@@ -153,7 +153,7 @@
 
 (define (create-invader g)
   (append (game-invaders g)
-          (make-invader (random 0 WIDTH) 0)))
+          (list (make-invader (random WIDTH) 0 10))))
 
 ;; ListOfInvaders -> ListOfInvaders
 ;; made the list of invaders move by SPEED etc
@@ -359,3 +359,37 @@
    (append (game-missiles g)
            (list (make-missile (tank-x (game-tank g)) TANK-HEIGHT/2)))
    (game-tank g)))
+
+;; RENDEEEEEEEEEEEEEER!!
+;; Game -> Image
+;; returns the game rendered!
+
+(define (render g) empty-image) ; Stub
+
+(check-expect (render G0)
+              (place-image TANK (/ WIDTH 2) TANK-Y BACKGROUND))
+(check-expect (render G2)
+              (place-images
+               (list INVADER
+                     MISSILE)
+               (list (make-posn 150 100)
+                     (make-posn 150 300))
+               (place-image TANK 50 TANK-Y BACKGROUND)))
+(check-expect (render G3)
+              (place-images
+               (list INVADER
+                     INVADER)
+               (list (make-posn 150 100)
+                    (make-posn 150 HEIGHT))
+               (place-images
+                (list MISSILE
+                      MISSILE)
+                (list (make-posn 150 300)
+                      (make-posn (invader-x I1) (+ (invader-y I1) 10)))
+                      (place-image TANK 50 TANK-Y BACKGROUND))))
+              
+#;
+(define (fn-for-game s)
+  (... (fn-for-loinvader (game-invaders s))
+       (fn-for-lom (game-missiles s))
+       (fn-for-tank (game-tank s))))
