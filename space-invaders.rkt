@@ -3,6 +3,7 @@
 #reader(lib "htdp-beginner-abbr-reader.ss" "lang")((modname space-invaders) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #f #t none #f () #f)))
 (require 2htdp/universe)
 (require 2htdp/image)
+(random-seed 2)
 
 ;; Space Invaders
 
@@ -126,7 +127,6 @@
             (on-tick   tock)     ; Game -> Game
             (to-draw   ...)      ; Game -> Image
             (stop-when lose)     ; Game -> Boolean
-            (on-mouse  ...)      ; Game Integer Integer MouseEvent -> Game
             (on-key    handle-key)))   ; Game KeyEvent -> Game
 
 
@@ -144,11 +144,16 @@
 
 (define (tock g)
   (make-game
-   (move-loi (game-invaders g))
+   (move-loi (create-invader g))
    (move-lom (game-missiles g))
    (game-tank g)))
 
+;; CREATE-INVADER
+;; append a new invader to the list of invaders
 
+(define (create-invader g)
+  (append (game-invaders g)
+          (make-invader (random 0 WIDTH) 0)))
 
 ;; ListOfInvaders -> ListOfInvaders
 ;; made the list of invaders move by SPEED etc
