@@ -452,4 +452,29 @@
                 (make-list-coords-i (rest loi)))]))
 
 
+;; MAKE-LIST-IMAGES GREAT AGAIN!!
+;; list (Missiles) -> list (Make-Posn)
+
+; (define (make-list-coords-m lom) empty) ; Stub
+
+(check-expect (make-list-coords-m (list M1)) (list (make-posn  150 300)))
+(check-expect (make-list-coords-m (list M1 M2)) 
+              (list
+               (make-posn  150 300)
+               (make-posn  (invader-x I1) (+ (invader-y I1) 10))))
+(check-expect (make-list-coords-m (list M1 M2 M3))
+              (list
+               (make-posn 150 300)
+               (make-posn (invader-x I1) (+ (invader-y I1) 10))
+               (make-posn (invader-x I1) (+ (invader-y I1) 5))))
+
+
+(define (make-list-coords-m lom)
+  (cond
+    [(empty? lom) empty]
+    [else (cons (make-posn (missile-x (first lom))
+                           (missile-y (first lom)))
+                (make-list-coords-m (rest lom)))]))
+
+
 
