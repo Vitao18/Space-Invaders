@@ -369,27 +369,56 @@
 (check-expect (render G0)
               (place-image TANK (/ WIDTH 2) TANK-Y BACKGROUND))
 (check-expect (render G2)
-              (place-images
-               (list INVADER
-                     MISSILE)
-               (list (make-posn 150 100)
-                     (make-posn 150 300))
-               (place-image TANK 50 TANK-Y BACKGROUND)))
+                (place-images
+                 (list INVADER MISSILE)
+                 (list (make-posn  150 100) (make-posn 150 300))
+                 (place-image TANK (/ WIDTH 2) TANK-Y BACKGROUND)
+                 ))
 (check-expect (render G3)
-              (place-images
-               (list INVADER
-                     INVADER)
-               (list (make-posn 150 100)
-                    (make-posn 150 HEIGHT))
-               (place-images
-                (list MISSILE
-                      MISSILE)
-                (list (make-posn 150 300)
-                      (make-posn (invader-x I1) (+ (invader-y I1) 10)))
-                      (place-image TANK 50 TANK-Y BACKGROUND))))
-              
+              (underlay
+               (place-image INVADER 150 100 (place-image INVADER 150 HEIGHT BACKGROUND))
+                (place-image MISSILE 150 300 (place-image MISSILE (invader-x I1) (+ (invader-y I1) 10) BACKGROUND))))
+;                (place-image TANK 50 TANK-Y BACKGROUND))))
+             
 #;
-(define (fn-for-game s)
-  (... (fn-for-loinvader (game-invaders s))
-       (fn-for-lom (game-missiles s))
-       (fn-for-tank (game-tank s))))
+(define (render g)
+  (place-images
+   (append (make-listof-inv-img (game-invaders g))
+           (make-listof-mis-img (game-missiles g)))
+   (append (make-list-coords (game-invaders g))
+           (make-list-coords (game-missiles g)))
+   (place-image TANK (tank-x (game-tank g)) TANK-Y BACKGROUND)))
+
+
+;; MAKE-LIST-IMAGES GREAT AGAIN!!
+;; list (Invaders) -> list (Images)
+
+; (define (make-listof-inv-img loi) empty) ; Stub
+
+(check-expect (make-listof-inv-img (list I1)) (list INVADER))
+(check-expect (make-listof-inv-img (list I1 I2)) (list INVADER INVADER))
+(check-expect (make-listof-inv-img (list I1 I2 I3)) (list INVADER INVADER INVADER))
+
+
+(define (make-listof-inv-img loi)
+  (cond
+    [(empty? loi) empty]
+    [else (cons INVADER
+                (make-listof-inv-img (rest loi)))]))
+
+;; MAKE-LIST-IMAGES GREAT AGAIN!!
+;; list (Missiles) -> list (Images)
+
+; (define (make-listof-mis-img loi) empty) ; Stub
+
+(check-expect (make-listof-mis-img (list M1)) (list MISSILE))
+(check-expect (make-listof-mis-img (list M1 M2)) (list MISSILE MISSILE))
+(check-expect (make-listof-mis-img (list M1 M2 M3)) (list MISSILE MISSILE MISSILE))
+
+(define (make-listof-mis-img lom)
+  (cond
+    [(empty? lom) empty]
+    [else (cons MISSILE
+                (make-listof-mis-img (rest lom)))]))
+
+
