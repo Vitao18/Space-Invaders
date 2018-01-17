@@ -372,21 +372,26 @@
                 (place-images
                  (list INVADER MISSILE)
                  (list (make-posn  150 100) (make-posn 150 300))
-                 (place-image TANK (/ WIDTH 2) TANK-Y BACKGROUND)
+                 (place-image TANK 50 TANK-Y BACKGROUND)
                  ))
 (check-expect (render G3)
-              (underlay
-               (place-image INVADER 150 100 (place-image INVADER 150 HEIGHT BACKGROUND))
-                (place-image MISSILE 150 300 (place-image MISSILE (invader-x I1) (+ (invader-y I1) 10) BACKGROUND))))
-;                (place-image TANK 50 TANK-Y BACKGROUND))))
+              (place-images
+                 (list INVADER INVADER MISSILE MISSILE)
+                 (list
+                  (make-posn  150 100)
+                  (make-posn  150 HEIGHT)
+                  (make-posn 150 300)
+                  (make-posn (invader-x I1) (+ (invader-y I1) 10)))
+                 (place-image TANK 50 TANK-Y BACKGROUND)
+                 ))
              
 #;
 (define (render g)
   (place-images
    (append (make-listof-inv-img (game-invaders g))
            (make-listof-mis-img (game-missiles g)))
-   (append (make-list-coords (game-invaders g))
-           (make-list-coords (game-missiles g)))
+   (append (make-list-coords-i (game-invaders g))
+           (make-list-coords-m (game-missiles g)))
    (place-image TANK (tank-x (game-tank g)) TANK-Y BACKGROUND)))
 
 
@@ -420,5 +425,31 @@
     [(empty? lom) empty]
     [else (cons MISSILE
                 (make-listof-mis-img (rest lom)))]))
+
+
+;; MAKE-LIST-IMAGES GREAT AGAIN!!
+;; list (Invaders) -> list (Make-Posn)
+
+; (define (make-list-coords-i loi) empty) ; Stub
+
+(check-expect (make-list-coords-i (list I1)) (list (make-posn  150 100)))
+(check-expect (make-list-coords-i (list I1 I2)) 
+              (list
+               (make-posn  150 100)
+               (make-posn  150 HEIGHT)))
+(check-expect (make-list-coords-i (list I1 I2 I3))
+              (list
+               (make-posn 150 100)
+               (make-posn 150 HEIGHT)
+               (make-posn 150 (+ HEIGHT 10))))
+
+
+(define (make-list-coords-i loi)
+  (cond
+    [(empty? loi) empty]
+    [else (cons (make-posn (invader-x (first loi))
+                           (invader-y (first loi)))
+                (make-list-coords-i (rest loi)))]))
+
 
 
