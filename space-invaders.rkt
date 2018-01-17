@@ -364,7 +364,7 @@
 ;; Game -> Image
 ;; returns the game rendered!
 
-(define (render g) empty-image) ; Stub
+; (define (render g) empty-image) ; Stub
 
 (check-expect (render G0)
               (place-image TANK (/ WIDTH 2) TANK-Y BACKGROUND))
@@ -385,7 +385,6 @@
                  (place-image TANK 50 TANK-Y BACKGROUND)
                  ))
              
-#;
 (define (render g)
   (place-images
    (append (make-listof-inv-img (game-invaders g))
