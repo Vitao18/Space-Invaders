@@ -123,10 +123,10 @@
 ;; start the world with ...
 ;; 
 (define (main g)
-  (big-bang g                    ; Game
-            (on-tick   tock)     ; Game -> Game
-            (to-draw   ...)      ; Game -> Image
-            (stop-when lose)     ; Game -> Boolean
+  (big-bang g                          ; Game
+            (on-tick   tock)           ; Game -> Game
+            (to-draw   render)         ; Game -> Image
+            (stop-when lose)           ; Game -> Boolean
             (on-key    handle-key)))   ; Game KeyEvent -> Game
 
 
@@ -139,13 +139,13 @@
 (check-expect (tock G1) (make-game empty empty T1))
 (check-expect (tock G2) (make-game
                          (list(make-invader 162 101.5 12))
-                         (list(make-missile (+ 150 MISSILE-SPEED) (+ 300 MISSILE-SPEED)))
+                         (list(make-missile 150 (- 300 MISSILE-SPEED)))
                          T1))
 
 (define (tock g)
   (make-game
    (move-loi (create-invader g))
-   (move-lom (game-missiles g))
+   (move-lom  (game-missiles g))
    (game-tank g)))
 
 ;; CREATE-INVADER
@@ -208,9 +208,9 @@
 
 (check-expect (move-lom empty) empty)
 (check-expect (move-lom (list M1 M2 M3))
-              (list (make-missile (+ 150 MISSILE-SPEED) (+ 300 MISSILE-SPEED))
-                    (make-missile (+ (invader-x I1) MISSILE-SPEED) (+ (+ (invader-y I1) 10) MISSILE-SPEED))
-                    (make-missile (+ (invader-x I1) MISSILE-SPEED) (+ (+ (invader-y I1)  5) MISSILE-SPEED))))
+              (list (make-missile  150           (- 300 MISSILE-SPEED))
+                    (make-missile (invader-x I1) (- (+ (invader-y I1) 10) MISSILE-SPEED))
+                    (make-missile (invader-x I1) (- (+ (invader-y I1)  5) MISSILE-SPEED))))
 
 
 (define (move-lom lom)
@@ -225,10 +225,10 @@
 
 ; (define (move-missile missile) missile) ;Stub
 
-(check-expect (move-missile M1) (make-missile (+ 150 MISSILE-SPEED) (+ 300 MISSILE-SPEED)))
+(check-expect (move-missile M1) (make-missile 150 (- 300 MISSILE-SPEED)))
 
 (define (move-missile missile)
-  (make-missile (+ (missile-x missile) MISSILE-SPEED) (+ (missile-y missile) MISSILE-SPEED)))
+  (make-missile (missile-x missile) (- (missile-y missile) MISSILE-SPEED)))
 
 ;; STOPS THE GAME WHEN YOU LOSE
 ;; Game -> Boolean
@@ -285,10 +285,10 @@
               (make-game empty empty (make-tank (+ (/ WIDTH 2) TANK-SPEED)  1)))
 (check-expect (handle-key G0 " ")
               (make-game empty
-                         (list (make-missile (tank-x (game-tank G0)) TANK-HEIGHT/2)) T0))
+                         (list (make-missile (tank-x (game-tank G0)) (- HEIGHT TANK-HEIGHT/2))) T0))
 (check-expect (handle-key G2 " ")
               (make-game (list I1)
-                         (list M1 (make-missile (tank-x (game-tank G2)) TANK-HEIGHT/2)) T1))
+                         (list M1 (make-missile (tank-x (game-tank G2)) (- HEIGHT TANK-HEIGHT/2))) T1))
 (check-expect (handle-key G-LEFT "left")
               (make-game empty empty (make-tank 0 -1)))
 (check-expect (handle-key G-RIGHT "right")
@@ -348,16 +348,16 @@
 
 (check-expect (shoot G0)
               (make-game empty
-                         (list (make-missile (tank-x (game-tank G0)) TANK-HEIGHT/2)) T0))
+                         (list (make-missile (tank-x (game-tank G0)) (- HEIGHT TANK-HEIGHT/2))) T0))
 (check-expect (shoot G2)
               (make-game (list I1)
-                         (list M1 (make-missile (tank-x (game-tank G2)) TANK-HEIGHT/2)) T1))
+                         (list M1 (make-missile (tank-x (game-tank G2)) (- HEIGHT TANK-HEIGHT/2))) T1))
 
 (define (shoot g)
   (make-game
    (game-invaders g)
    (append (game-missiles g)
-           (list (make-missile (tank-x (game-tank g)) TANK-HEIGHT/2)))
+           (list (make-missile (tank-x (game-tank g)) (- HEIGHT TANK-HEIGHT/2))))
    (game-tank g)))
 
 ;; RENDEEEEEEEEEEEEEER!!
