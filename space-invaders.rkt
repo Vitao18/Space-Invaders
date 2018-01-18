@@ -142,19 +142,29 @@
                          (list(make-missile 150 (- 300 MISSILE-SPEED)))
                          T1))
 
-(define (tock g)
+(define (tock (filter g))
   (make-game
-   (move-loi (create-invader g))
-   (move-lom  (game-missiles g))
+   (move-loi (create-invader (filter-invaders g)))
+   (move-lom (filter-missiles g))
    (game-tank g)))
 
+;; Filter-invaders
+;; Returns a new list of Invaders
+;; Game -> ListOfInvaders
+
+;; Filter-Missiles
+;; Returns a new list of Missiles
+;; Game -> ListOfMissiles
+
+
 ;; CREATE-INVADER
+;; ListOfInvaders -> ListOfInvaders
 ;; append a new invader to the list of invaders
 
 (define (create-invader g)
   (cond
     [(< (random (/ (sqr INVADE-RATE) 2)) INVADE-RATE)
-     (append (game-invaders g)
+     (append g
     (list (make-invader (random WIDTH) 0
                         (cond [(zero? (random 2)) (* -1 (random 11))]
                                                   [else (random 11)]))))]
