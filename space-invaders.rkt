@@ -152,8 +152,13 @@
 ;; append a new invader to the list of invaders
 
 (define (create-invader g)
-  (append (game-invaders g)
-          (list (make-invader (random WIDTH) 0 10))))
+  (cond
+    [(< (random (/ (sqr INVADE-RATE) 2)) INVADE-RATE)
+     (append (game-invaders g)
+    (list (make-invader (random WIDTH) 0
+                        (cond [(zero? (random 2)) (* -1 (random 11))]
+                                                  [else (random 11)]))))]
+   [else (game-invaders g)])) 
 
 ;; ListOfInvaders -> ListOfInvaders
 ;; made the list of invaders move by SPEED etc
